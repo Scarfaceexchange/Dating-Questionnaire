@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Are We a Match?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one centered column over a "golden hour" night sky; a frosted card swaps between intro, questions and endings.
+   Single deliberate look (evening, warm light), so one palette for every viewer. */
+:root {
+  color-scheme: dark;
+  --night: #10151F;
+  --night-2: #1A2030;
+  --glow-amber: #F2A65A;
+  --glow-rose: #C8566E;
+  --ink: #F6F0E8;
+  --soft: #B9B3AE;
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-line: rgba(255, 255, 255, 0.13);
+  --chip: rgba(255, 255, 255, 0.07);
+  --accent: #F4B860;
+  --accent-ink: #1E1509;
+  --no: #FF8A8A;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--night); }
+body {
+  margin: 0; min-height: 100vh; min-height: 100dvh;
+  background:
+    radial-gradient(60vmax 50vmax at 110% -10%, rgba(242, 166, 90, 0.38), transparent 60%),
+    radial-gradient(55vmax 45vmax at -15% 105%, rgba(200, 86, 110, 0.32), transparent 60%),
+    linear-gradient(170deg, var(--night-2), var(--night));
+  background-attachment: fixed;
+  color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 36px 56px;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+body.at-end .wrap { min-height: calc(100dvh - 92px); justify-content: center; }
+h1, h2 { font-family: var(--display); margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+p { margin: 0; }
+
+/* Header */
+.hero { display: flex; flex-direction: column; gap: 14px; padding-top: 8px; }
+.tag {
+  align-self: flex-start; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent); background: rgba(244, 184, 96, 0.12); border: 1px solid rgba(244, 184, 96, 0.3);
+  padding: 6px 12px; border-radius: 999px;
+}
+.hero h1 { font-size: clamp(2.6rem, 12vw, 3.6rem); font-weight: 800; line-height: 0.98; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero p { color: var(--soft); font-size: 1.0625rem; max-width: 34ch; }
+.hero.compact h1 { font-size: 1.5rem; }
+.hero.compact p, .hero.compact .tag { display: none; }
+
+/* Glass card */
+.card {
+  background: var(--glass); border: 1px solid var(--glass-line); border-radius: 24px; padding: 24px;
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.55);
+  display: flex; flex-direction: column; gap: 22px;
+}
+.card h2 { font-size: 1.6rem; font-weight: 700; line-height: 1.15; }
+.sub { color: var(--soft); font-size: 0.9375rem; }
+.fine { color: var(--soft); font-size: 0.8125rem; display: flex; gap: 8px; align-items: center; }
+.fine svg { flex: none; }
+
+/* Intro form */
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fields .full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field > span { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--soft); }
+.pair { display: flex; gap: 8px; }
+.pair select { flex: 1; min-width: 0; }
+input, select {
+  font: inherit; font-size: 1rem; color: var(--ink); background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--glass-line); border-radius: 14px; padding: 13px 14px; width: 100%;
+  transition: border-color 0.15s, background 0.15s;
+}
+input::placeholder { color: rgba(246, 240, 232, 0.38); }
+select { appearance: none; -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--soft) 50%), linear-gradient(135deg, var(--soft) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%; background-size: 5px 5px; background-repeat: no-repeat;
+  padding-right: 32px;
+}
+select option { color: #111; }
+input:focus, select:focus { outline: none; border-color: var(--accent); background-color: rgba(0, 0, 0, 0.3); }
+.error { color: var(--no); font-weight: 600; font-size: 0.9375rem; }
+.error:empty { display: none; }
+
+/* Buttons */
+.btn {
+  font: inherit; font-weight: 700; font-size: 1rem; border: 0; border-radius: 16px; padding: 16px 22px; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink); width: 100%;
+  box-shadow: 0 10px 30px -10px rgba(244, 184, 96, 0.6);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 14px 34px -10px rgba(244, 184, 96, 0.75); }
+.btn:active { transform: translateY(1px); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--glass-line); box-shadow: none; }
+.btn:focus-visible, .link:focus-visible, .opt:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.link {
+  font: inherit; font-size: 0.875rem; font-weight: 600; color: var(--soft); background: none; border: 0; padding: 6px 2px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.link:hover { color: var(--ink); }
+.link:disabled { visibility: hidden; }
+
+/* Quiz */
+.topline { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.count { font-size: 0.875rem; font-weight: 700; color: var(--soft); font-variant-numeric: tabular-nums; }
+.count b { color: var(--ink); }
+.rail { height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 999px; overflow: hidden; margin-top: -10px; }
+.rail > span { display: block; height: 100%; width: 0; border-radius: inherit;
+  background: linear-gradient(90deg, var(--glow-rose), var(--accent)); transition: width 0.35s ease; }
+.qbox { display: flex; flex-direction: column; gap: 20px; }
+.qbox.enter { animation: rise 0.32s ease both; }
+@keyframes rise { from { opacity: 0.001; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.options { display: flex; flex-direction: column; gap: 10px; }
+.opt {
+  font: inherit; font-size: 1rem; font-weight: 600; color: var(--ink); text-align: left;
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  background: var(--chip); border: 1px solid var(--glass-line); border-radius: 16px; padding: 14px 16px; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.opt .key {
+  flex: none; width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center;
+  font-size: 0.8125rem; font-weight: 800; color: var(--soft); border: 1px solid var(--glass-line);
+}
+.opt:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25); }
+.opt:active { transform: scale(0.99); }
+.opt[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.opt[aria-pressed="true"] .key { color: var(--accent-ink); border-color: rgba(30, 21, 9, 0.35); }
+.options.scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.options.scale .opt { justify-content: center; padding: 16px 0; font-family: var(--display); font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.scale-ends { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--soft); margin-top: -8px; }
+
+/* Endings */
+.ending { text-align: center; align-items: center; padding: 44px 24px; gap: 16px; }
+.badge {
+  width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-line);
+}
+.badge.yes { background: rgba(244, 184, 96, 0.16); border-color: rgba(244, 184, 96, 0.45); }
+.ending h2 { font-size: clamp(1.9rem, 8vw, 2.4rem); font-weight: 800; }
+.farewell { color: var(--soft); font-size: 1.125rem; }
+.phone {
+  font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 10vw, 2.8rem); letter-spacing: -0.01em;
+  color: var(--accent); font-variant-numeric: tabular-nums; user-select: all; text-shadow: 0 0 40px rgba(244, 184, 96, 0.45);
+}
+#date-opts { width: 100%; margin-top: 6px; }
+.myname { font-family: var(--display); font-weight: 700; font-size: 1.5rem; margin-bottom: -14px; }
+.message {
+  width: 100%; text-align: left; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--glass-line); border-radius: 16px 16px 16px 4px;
+  padding: 14px 16px; white-space: pre-wrap; word-break: break-word; font-size: 0.9375rem;
+}
+.actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.status { color: var(--soft); font-size: 0.875rem; min-height: 1.3em; }
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 5; width: 100%; height: 100%; }
+
+@media (max-width: 380px) {
+  .fields { grid-template-columns: 1fr; }
+  .card { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qbox.enter { animation: none; }
+  .rail > span, .btn, .opt { transition: none; }
+}
+</style>
+</head>
+<body>
+<canvas id="confetti" hidden></canvas>
+
+<div class="wrap">
+  <header class="hero" id="header">
+    <span class="tag">Compatibility check</span>
+    <h1>Are we a <em>match?</em></h1>
+    <p>A few quick taps. If we line up on what matters, my number is waiting at the end.</p>
+  </header>
+
+  <form class="card" id="intro" novalidate>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h2>First, the basics</h2>
+      <p class="sub">Every good story starts with a proper introduction.</p>
+    </div>
+    <div class="fields">
+      <label class="field full" for="her-name"><span>Name</span>
+        <input type="text" id="her-name" autocomplete="given-name" placeholder="What should I call you?">
+      </label>
+      <label class="field" for="her-age"><span>Age</span>
+        <input type="number" id="her-age" inputmode="numeric" min="18" max="99" placeholder="27">
+      </label>
+      <div class="field"><span>Height</span>
+        <div class="pair">
+          <select id="her-ft" aria-label="Feet"><option value="">ft</option></select>
+          <select id="her-in" aria-label="Inches"><option value="">in</option></select>
+        </div>
+      </div>
+      <label class="field full" for="her-job"><span>Job title</span>
+        <input type="text" id="her-job" autocomplete="organization-title" placeholder="Nurse, student, future CEO…">
+      </label>
+    </div>
+    <p class="error" id="intro-error" aria-live="polite"></p>
+    <button class="btn" id="start" type="submit">Let's see if we match</button>
+    <p class="fine">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Your answers are sent privately to Rashann.
+    </p>
+  </form>
+
+  <section class="card" id="quiz" hidden>
+    <div class="topline">
+      <button class="link" id="back" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Back
+      </button>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="rail"><span id="bar"></span></div>
+    <div class="qbox" id="qbox">
+      <h2 id="q-text"></h2>
+      <div class="options" id="q-opts" role="group" aria-labelledby="q-text"></div>
+    </div>
+  </section>
+
+  <section class="card ending" id="ended" hidden>
+    <div class="badge" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/><path d="M13 7l-2 4 3 2-2 4"/></svg>
+    </div>
+    <h2>We are incompatible</h2>
+    <p class="farewell">Good luck and God bless.</p>
+    <button class="btn ghost" id="reset" type="button" hidden>Start over (only you can see this)</button>
+  </section>
+
+  <section class="card ending" id="date" hidden>
+    <div class="badge yes" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F4B860" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    </div>
+    <h2>You passed every question</h2>
+    <p class="farewell">One last thing. When are you free for our first date?</p>
+    <div class="options" id="date-opts" role="group" aria-label="First date">
+      <button class="opt" type="button" data-when="Anytime Monday"><span class="key">A</span><span>Anytime Monday</span></button>
+      <button class="opt" type="button" data-when="Sunday night"><span class="key">B</span><span>Sunday night</span></button>
+    </div>
+  </section>
+
+  <section class="card ending" id="matched" hidden>
+    <div class="badge yes" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="#F4B860"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+    </div>
+    <h2>We're a match</h2>
+    <p class="farewell" id="date-line"></p>
+    <p class="myname">Rashann</p>
+    <p class="phone" id="phone"></p>
+    <p class="sub">Text me this so I know it's you:</p>
+    <p class="message" id="message"></p>
+    <div class="actions">
+      <button class="btn" id="copy-msg" type="button">Copy message</button>
+      <button class="btn ghost" id="copy" type="button">Copy number</button>
+    </div>
+    <p class="status" id="copied" aria-live="polite"></p>
+  </section>
+</div>
+
+<script>
+// ---- Settings ----------------------------------------------------------
+const PHONE = "814-790-0110";
+
+// Push notifications to Rashann's phone through the ntfy app (subscribe to this channel).
+const NTFY_TOPIC = "rashann-match-9a1c9ef3a236885c";
+
+// ok: the answers that let her continue. Any other answer ends the
+// questionnaire. Leave `ok` out to accept every answer.
+// minScore: for the 1–10 question, the lowest number that lets her continue.
+const QUESTIONS = [
+  { q: "Do you believe in God?", opts: ["Yes", "No"], ok: ["Yes"] },
+  { q: "Do you attend church?", opts: ["Yes", "No", "Sometimes"], ok: ["Yes", "Sometimes"] },
+  { q: "Do you drink alcohol?", opts: ["Yes", "No", "Just a little wine"], ok: ["Just a little wine", "No"] },
+  { q: "Do you smoke?", opts: ["Yes", "No"], ok: ["No"] },
+  { q: "Do you have male friends or a group of homegirls?",
+    opts: ["Mostly male friends", "A group of homegirls", "A good homegirl or two, maybe three"],
+    ok: ["A group of homegirls", "A good homegirl or two, maybe three"] },
+  { q: "Do you have kids?", opts: ["Yes", "No"], ok: ["No"] },
+  { q: "Do you want kids someday?", opts: ["Yes", "No", "Not sure"], ok: ["Yes", "Not sure"] },
+  { q: "Are you in a space to be in a serious commitment and to be pursued correctly?",
+    opts: ["Yes", "I think so", "No"], ok: ["Yes"] },
+  { q: "Do you desire to be a wife?", opts: ["Yes", "No"], ok: ["Yes"] },
+  { q: "Have you ever been married?", opts: ["Yes", "No"], ok: ["No"] },
+  { q: "Are you currently talking to anyone else?", opts: ["Yes", "No"], ok: ["No"] },
+  { q: "Do you have a job or a career?",
+    opts: ["A job", "A career", "In school", "School and a job", "School and a career", "Not working right now"],
+    ok: ["A job", "A career", "In school", "School and a job", "School and a career"] },
+  { q: "Do you have your own place?", opts: ["Yes", "No", "Living with family"], ok: ["Yes", "Living with family"] },
+  { q: "Because of higher priority financial goals, I don't have a car right now. Is that okay with you?",
+    opts: ["Yes, that's fine", "It's okay for now", "No, that's a dealbreaker for me"], ok: ["Yes, that's fine"] },
+  { q: "Do you cook?", opts: ["Yes", "No", "Sometimes"], ok: ["Yes", "Sometimes"] },
+  { q: "Do you work out?", opts: ["Yes", "No", "Sometimes"], ok: ["Yes"] },
+  { q: "Do you understand the difference between communication, comprehension and responding?",
+    opts: ["Yes", "No"], ok: ["Yes"] },
+  { q: "How good are your communication skills, on a scale of 1 to 10?", scale: 10, minScore: 7 },
+  { q: "Do you understand what it means to speak someone's love language?", opts: ["Yes", "No"], ok: ["Yes"] },
+  { q: "Do you go out to the club or take part in the nightlife?",
+    opts: ["No", "Once in a blue moon", "More than once a month"], ok: ["No", "Once in a blue moon"] },
+  { q: "Do you have tattoos?", opts: ["Yes", "No"] },
+  { q: "Do you have trips planned that would slow down our dating process?", opts: ["Yes", "No"], ok: ["No"] },
+  { q: "Do you still talk to your exes?", opts: ["Yes", "No"], ok: ["No"] },
+  { q: "Would you share your location with your partner?", opts: ["Yes", "No"], ok: ["Yes"] },
+  { q: "Are you on social media a lot?", opts: ["Yes", "No", "Sometimes"], ok: ["No"] },
+  { q: "Do you like to travel?", opts: ["Yes", "No"], ok: ["Yes"] },
+  { q: "Do you want a pet?", opts: ["Yes", "No", "Already have one"] },
+  { q: "Are you a daredevil? Skydiving, jumping off cliffs, etc.?", opts: ["Yes", "No"], ok: ["No"] },
+  { q: "Are you celibate until marriage?", opts: ["Yes", "No", "Open to it"], ok: ["No"] },
+  { q: "Have you ever cheated in a relationship?", opts: ["Yes", "No"], ok: ["No"] },
+  { q: "When there's a disagreement, do you talk it out or shut down?",
+    opts: ["Talk it out", "Shut down", "Need time, then talk"], ok: ["Talk it out"] },
+];
+// ------------------------------------------------------------------------
+
+const $ = (id) => document.getElementById(id);
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let answers = new Array(QUESTIONS.length).fill(null);
+let idx = 0;
+let advancing = false;
+
+const optionsFor = (q) => q.scale ? Array.from({ length: q.scale }, (_, i) => String(i + 1)) : q.opts;
+
+function passes(q, a) {
+  if (q.scale) return Number(a) >= q.minScore;
+  return !q.ok || q.ok.includes(a);
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[idx];
+  $("count").innerHTML = `<b>${idx + 1}</b> / ${QUESTIONS.length}`;
+  $("bar").style.width = `${(idx / QUESTIONS.length) * 100}%`;
+  $("q-text").textContent = q.q;
+  const box = $("q-opts");
+  box.className = "options" + (q.scale ? " scale" : "");
+  box.replaceChildren();
+  optionsFor(q).forEach((label, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "opt"; b.id = `q${idx}-o${i}`;
+    b.setAttribute("aria-pressed", String(answers[idx] === label));
+    if (!q.scale) {
+      const key = document.createElement("span");
+      key.className = "key"; key.textContent = String.fromCharCode(65 + i);
+      b.append(key);
+    }
+    const t = document.createElement("span");
+    t.textContent = label;
+    b.append(t);
+    b.addEventListener("click", () => choose(label, b));
+    box.append(b);
+  });
+  if (q.scale) {
+    const ends = document.createElement("div");
+    ends.className = "scale-ends";
+    ends.innerHTML = "<span>Needs work</span><span>Excellent</span>";
+    box.after(ends);
+  }
+  const qbox = $("qbox");
+  qbox.classList.remove("enter"); void qbox.offsetWidth; qbox.classList.add("enter");
+}
+
+function choose(label, btn) {
+  if (advancing) return;
+  answers[idx] = label;
+  $("q-opts").querySelectorAll(".opt").forEach((o) => o.setAttribute("aria-pressed", String(o === btn)));
+  advancing = true;
+  setTimeout(() => {
+    advancing = false;
+    const q = QUESTIONS[idx];
+    if (!passes(q, label)) {
+      notify("Failed the questionnaire", ["x"], [`Out at question ${listNumber(idx)}: ${q.q}`, `Answered: ${label}`]);
+      endQuiz(); return;
+    }
+    if (idx < QUESTIONS.length - 1) { idx++; clearScaleEnds(); renderQuestion(); return; }
+    askDate();
+  }, reduceMotion ? 120 : 280);
+}
+
+function clearScaleEnds() { document.querySelectorAll(".scale-ends").forEach((e) => e.remove()); }
+
+function show(id) {
+  ["intro", "quiz", "ended", "date", "matched"].forEach((s) => ($(s).hidden = s !== id));
+  $("header").classList.toggle("compact", id === "quiz");
+  document.body.classList.toggle("at-end", id === "ended" || id === "date" || id === "matched");
+  window.scrollTo({ top: 0 });
+}
+
+// Rashann's own numbering: the two communication questions are 17a and 17b.
+const listNumber = (i) => i < 16 ? i + 1 : i === 16 ? "17a" : i === 17 ? "17b" : i;
+
+function notify(title, tags, lines) {
+  const me = intro();
+  const who = me.name ? `${me.name}, ${me.age}, ${me.ft}'${me.inch}", ${me.job}` : "Someone";
+  try {
+    fetch("https://ntfy.sh/", {
+      method: "POST",
+      keepalive: true,
+      body: JSON.stringify({ topic: NTFY_TOPIC, title, tags, message: [who, ...lines].join("\n") }),
+    }).catch(() => {});
+  } catch {}
+}
+
+const LOCK_KEY = "match-quiz-ended-v2";
+function endQuiz() {
+  try { localStorage.setItem(LOCK_KEY, "1"); } catch {}
+  $("header").hidden = true;
+  clearScaleEnds();
+  show("ended");
+}
+try { if (localStorage.getItem(LOCK_KEY)) endQuiz(); } catch {}
+
+// The owner gets a reset button on the "incompatible" screen for testing.
+(async () => {
+  const user = await window.claude?.use?.("user");
+  if (user?.isOwner()) $("reset").hidden = false;
+})();
+$("reset").addEventListener("click", () => {
+  try { localStorage.removeItem(LOCK_KEY); } catch {}
+  answers = new Array(QUESTIONS.length).fill(null); idx = 0;
+  $("header").hidden = false;
+  show("intro");
+});
+
+for (let f = 4; f <= 7; f++) $("her-ft").add(new Option(f + " ft", f));
+for (let i = 0; i <= 11; i++) $("her-in").add(new Option(i + " in", i));
+
+const intro = () => ({
+  name: $("her-name").value.trim(),
+  age: Number($("her-age").value),
+  ft: $("her-ft").value,
+  inch: $("her-in").value,
+  job: $("her-job").value.trim(),
+});
+
+$("intro").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const me = intro();
+  let err = "";
+  if (!me.name) err = "Tell me your name first.";
+  else if (!me.age) err = "Add your age.";
+  else if (me.age < 18) err = "This questionnaire is for adults 18 and over.";
+  else if (!me.ft || me.inch === "") err = "Pick your height.";
+  else if (!me.job) err = "Add your job title.";
+  $("intro-error").textContent = err;
+  if (err) return;
+  idx = 0; renderQuestion(); show("quiz");
+});
+
+$("back").addEventListener("click", () => {
+  clearScaleEnds();
+  if (idx === 0) show("intro"); else { idx--; renderQuestion(); }
+});
+
+function askDate() {
+  $("header").hidden = true;
+  clearScaleEnds();
+  $("date-opts").querySelectorAll(".opt").forEach((o) => o.setAttribute("aria-pressed", "false"));
+  show("date");
+}
+$("date-opts").querySelectorAll(".opt").forEach((b) => b.addEventListener("click", () => {
+  $("date-opts").querySelectorAll(".opt").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+  setTimeout(() => finish(b.dataset.when), reduceMotion ? 120 : 280);
+}));
+
+function finish(when) {
+  notify("PASSED the questionnaire", ["white_check_mark", "tada"], [`First date: ${when}`, "Your number was shown to her."]);
+  $("phone").textContent = PHONE;
+  $("date-line").textContent = `${when} it is. Here's my number.`;
+  const me = intro();
+  $("message").textContent = `Hey Rashann! It's ${me.name}. I passed your questionnaire 😊\n${me.age}, ${me.ft}'${me.inch}", ${me.job}\nFirst date: ${when}`;
+  show("matched");
+  celebrate();
+}
+
+function celebrate() {
+  if (reduceMotion) return;
+  const c = $("confetti"); c.hidden = false;
+  const ctx = c.getContext("2d");
+  const dpr = devicePixelRatio || 1;
+  c.width = innerWidth * dpr; c.height = innerHeight * dpr; ctx.scale(dpr, dpr);
+  const colors = ["#F4B860", "#F2A65A", "#C8566E", "#F6F0E8"];
+  const bits = Array.from({ length: 110 }, () => ({
+    x: innerWidth / 2, y: innerHeight * 0.35,
+    vx: (Math.random() - 0.5) * 11, vy: -Math.random() * 11 - 3,
+    s: 4 + Math.random() * 5, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3,
+    c: colors[Math.floor(Math.random() * colors.length)],
+  }));
+  const start = performance.now();
+  (function frame(t) {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    bits.forEach((b) => {
+      b.vy += 0.28; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.r += b.vr;
+      ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.r);
+      ctx.fillStyle = b.c; ctx.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2); ctx.restore();
+    });
+    if (t - start < 2600) requestAnimationFrame(frame); else c.hidden = true;
+  })(start);
+}
+
+async function copyFrom(id, done) {
+  try {
+    await navigator.clipboard.writeText($(id).textContent);
+    $("copied").textContent = done;
+  } catch {
+    const range = document.createRange();
+    range.selectNodeContents($(id));
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    $("copied").textContent = "Selected. Copy it with your keyboard or long-press.";
+  }
+}
+$("copy").addEventListener("click", () => copyFrom("phone", "Number copied."));
+$("copy-msg").addEventListener("click", () => copyFrom("message", "Message copied. Paste it into a text to me."));
+</script>
+</body>
+</html>
